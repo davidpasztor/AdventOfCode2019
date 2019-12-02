@@ -112,3 +112,29 @@ func solvePuzzle2Pt1() -> Int? {
 }
 
 solvePuzzle2Pt1()
+
+func solvePuzzle2Pt2() -> Int? {
+    do {
+        let comma = CharacterSet(charactersIn: ",")
+        let faultyProgram = try parseInput(day: 2, separator: comma)
+        // FIXME: needs to generate all pairs of 0...99, this isn't doing that
+        let nounsAndVerbs = zip(Array(0...99),Array((0...99).reversed()))
+        print(nounsAndVerbs)
+        for current in nounsAndVerbs {
+            var restoredProgram = faultyProgram
+            restoredProgram[1] = current.0
+            restoredProgram[2] = current.1
+            let finishedProgram = restoreIntcodeComputer(from: restoredProgram)
+            let output = finishedProgram[0]
+            if output == 19690720 {
+                return 100 * current.0 + current.1
+            }
+        }
+        return nil
+    } catch {
+        error
+        return nil
+    }
+}
+
+solvePuzzle2Pt2()
