@@ -68,14 +68,47 @@ enum OpCode: Int {
     case finished = 99
 }
 
+func restoreIntcodeComputer(from faultyProgram: [Int]) -> [Int] {
+    var finishedProgram = faultyProgram
+    for opCodeIndex in stride(from: finishedProgram.indices.lowerBound, through: finishedProgram.indices.upperBound, by: 4) {
+        let opCode = OpCode(rawValue: finishedProgram[opCodeIndex])!
+        switch opCode {
+        case .add:
+            let resultIndex = finishedProgram[opCodeIndex + 3]
+            let lhsIndex = finishedProgram[opCodeIndex + 1]
+            let rhsIndex = finishedProgram[opCodeIndex + 2]
+            finishedProgram[resultIndex] = finishedProgram[lhsIndex] + finishedProgram[rhsIndex]
+        case .multiply:
+            let resultIndex = finishedProgram[opCodeIndex + 3]
+            let lhsIndex = finishedProgram[opCodeIndex + 1]
+            let rhsIndex = finishedProgram[opCodeIndex + 2]
+            finishedProgram[resultIndex] = finishedProgram[lhsIndex] * finishedProgram[rhsIndex]
+        case .finished:
+            return finishedProgram
+        }
+    }
+    return finishedProgram
+}
+
+restoreIntcodeComputer(from: [1,0,0,0,99]) // expected 2,0,0,0,99
+restoreIntcodeComputer(from: [2,3,0,3,99]) // expected 2,3,0,6,99
+restoreIntcodeComputer(from: [2,4,4,5,99,0]) // expected 2,4,4,5,99,9801
+restoreIntcodeComputer(from: [1,1,1,4,99,5,6,0,99]) // expected 30,1,1,4,2,5,6,0,99
+
 func solvePuzzle2Pt1() -> Int? {
     do {
-        let comma = CharacterSet(charactersIn: "-")
-        let input = try parseInput(day: 2, separator: comma)
-        
-        return input[0]
+        let comma = CharacterSet(charactersIn: ",")
+        let faultyProgram = try parseInput(day: 2, separator: comma)
+        // Restore program state
+        var restoredProgram = faultyProgram
+        restoredProgram[1] = 12
+        restoredProgram[2] = 2
+        let finishedProgram = restoreIntcodeComputer(from: restoredProgram)
+        return finishedProgram[0]
     } catch {
         error
         return nil
     }
 }
+
+solvePuzzle2Pt1()
