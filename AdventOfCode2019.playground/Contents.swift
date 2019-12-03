@@ -170,6 +170,7 @@ func manhattanDistance(of point1: Point, to point2: Point) -> Int {
     return point1.x - point2.x + point1.y - point2.y
 }
 
+/// Straight move in a taxicab geometry
 enum Move: RawRepresentable {
     case down(Int)
     case left(Int)
@@ -204,19 +205,80 @@ enum Move: RawRepresentable {
             return nil
         }
     }
-}
-
-func parseWireInput() -> Set<Point> {
-    do {
-        let stringInput = try readInput(filename: "day3input")
-        let wires = stringInput.components(separatedBy: .newlines)
-        let instructions = wires.map { $0.components(separatedBy: CharacterSet(charactersIn: ",")).compactMap { Move(rawValue: $0) }}
-        print(instructions)
-        return Set<Point>()
-    } catch {
-        error
-        return Set<Point>()
+    
+    /// Returns all points that a specific move from `startingPoint` touches
+    func createPointsForMove(from startingPoint: Point) -> [Point] {
+        switch self {
+        case let .down(num):
+            return (1...num).map { Point(x: startingPoint.x, y: startingPoint.y - $0) }
+        case let .left(num):
+            return (1...num).map { Point(x: startingPoint.x - $0, y: startingPoint.y) }
+        case let .right(num):
+            return (1...num).map { Point(x: startingPoint.x + $0, y: startingPoint.y) }
+        case let .up(num):
+            return (1...num).map { Point(x: startingPoint.x, y: startingPoint.y + $0) }
+        }
     }
 }
 
-parseWireInput()
+/// Given a `String` representation of a pair of wires, parse it into a pair of each move making up that wire
+func parseWireInput(_ string: String) -> Pair<[Move]> {
+    let wires = string.components(separatedBy: .newlines)
+    let instructions = wires.map { $0.components(separatedBy: CharacterSet(charactersIn: ",")).compactMap { Move(rawValue: $0) }}
+    return .init(left: instructions[0], right: instructions[1])
+}
+
+/// Get the set of points making up a wire
+func pointsOnAWire(_ wire: [Move]) -> Set<Point> {
+    let emptyResult = (Set<Point>(),Point(x: 0, y: 0))
+    return wire.reduce(emptyResult, { result, move in
+        let (pointsTouched, currentPoint) = result
+        let newPoints = move.createPointsForMove(from: currentPoint)
+        return (pointsTouched.union(newPoints), newPoints.last!)
+    }).0
+}
+
+func findClosestIntersection(to centralPort: Point, wire1: Set<Point>, wire2: Set<Point>) -> Int? {
+    let intersections = wire1.intersection(wire2)
+    let intersectionDistancesFromCentralPort = intersections.map { manhattanDistance(of: $0, to: centralPort) }
+    return intersectionDistancesFromCentralPort.min()
+}
+
+let centralPortLocation = Point(x: 0, y: 0)
+let example1 = """
+R8,U5,L5,D3
+U7,R6,D4,L4
+"""
+let wires = parseWireInput(example1)
+wires.left
+let firstWirePoints = pointsOnAWire(wires.left)
+let secondWirePoints = pointsOnAWire(wires.right)
+let smallestDistance = findClosestIntersection(to: centralPortLocation, wire1: firstWirePoints, wire2: secondWirePoints)
+print("Example1 smallest distance: \(smallestDistance?.description ?? "Failed")")
+
+let ex2 = """
+R75,D30,R83,U83,L12,D49,R71,U7,L72
+U62,R66,U55,R34,D71,R55,D58,R83
+"""
+let wires2 = parseWireInput(ex2)
+let smallestDistance2 = findClosestIntersection(to: centralPortLocation, wire1: pointsOnAWire(wires2.left), wire2: pointsOnAWire(wires2.right))
+print("Example2 smallest distance: \(smallestDistance2?.description ?? "Failed")")
+
+let ex3 = """
+R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51
+U98,R91,D20,R16,D67,R40,U7,R15,U6,R7
+"""
+let wires3 = parseWireInput(ex3)
+let smallestDistance3 = findClosestIntersection(to: centralPortLocation, wire1: pointsOnAWire(wires3.left), wire2: pointsOnAWire(wires3.right))
+print("Example3 smallest distance: \(smallestDistance3?.description ?? "Failed")")
+
+func solvePuzzle3Pt1() -> Int? {
+    guard let stringInput = try? readInput(filename: "day3input") else { return nil }
+    let wires = parseWireInput(stringInput)
+    let firstWirePoints = pointsOnAWire(wires.left)
+    let secondWirePoints = pointsOnAWire(wires.right)
+    let centralPortLocation = Point(x: 0, y: 0)
+    return findClosestIntersection(to: centralPortLocation, wire1: firstWirePoints, wire2: secondWirePoints)
+}
+
+solvePuzzle3Pt1()
