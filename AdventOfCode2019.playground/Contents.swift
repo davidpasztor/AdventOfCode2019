@@ -113,21 +113,33 @@ func solvePuzzle2Pt1() -> Int? {
 
 solvePuzzle2Pt1()
 
+struct Pair<Element> {
+    let left: Element
+    let right: Element
+}
+
+extension Pair: Equatable where Element: Equatable {}
+extension Pair: Hashable where Element: Hashable {}
+
 func solvePuzzle2Pt2() -> Int? {
     do {
         let comma = CharacterSet(charactersIn: ",")
         let faultyProgram = try parseInput(day: 2, separator: comma)
-        // FIXME: needs to generate all pairs of 0...99, this isn't doing that
-        let nounsAndVerbs = zip(Array(0...99),Array((0...99).reversed()))
-        print(nounsAndVerbs)
+        let inputRange = 0...99
+        var nounsAndVerbs = Set<Pair<Int>>()
+        for noun in inputRange {
+            for verb in inputRange {
+                nounsAndVerbs.insert(.init(left: noun, right: verb))
+            }
+        }
         for current in nounsAndVerbs {
             var restoredProgram = faultyProgram
-            restoredProgram[1] = current.0
-            restoredProgram[2] = current.1
+            restoredProgram[1] = current.left
+            restoredProgram[2] = current.right
             let finishedProgram = restoreIntcodeComputer(from: restoredProgram)
             let output = finishedProgram[0]
             if output == 19690720 {
-                return 100 * current.0 + current.1
+                return 100 * current.left + current.right
             }
         }
         return nil
@@ -136,5 +148,17 @@ func solvePuzzle2Pt2() -> Int? {
         return nil
     }
 }
+// Takes a long time to run, so commented out
+//solvePuzzle2Pt2()
 
-solvePuzzle2Pt2()
+// Day 3 - https://adventofcode.com/2019/day/3
+struct Point {
+    let x: Int
+    let y: Int
+}
+
+// Manhattan distance equation https://en.wikipedia.org/wiki/Taxicab_geometry
+func manhattanDistance(of point1: Point, to point2: Point) -> Int {
+    return point1.x - point2.x + point1.y - point2.y
+}
+
