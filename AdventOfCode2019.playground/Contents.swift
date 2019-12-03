@@ -66,6 +66,17 @@ enum OpCode: Int {
     case multiply = 2
     /// The program is finished and should immediately halt
     case finished = 99
+
+    func performOperation(lhs: Int, rhs: Int) -> Int? {
+        switch self {
+        case .add:
+            return lhs + rhs
+        case .multiply:
+            return lhs * rhs
+        case .finished:
+            return nil
+        }
+    }
 }
 
 func restoreIntcodeComputer(from faultyProgram: [Int]) -> [Int] {
@@ -73,16 +84,13 @@ func restoreIntcodeComputer(from faultyProgram: [Int]) -> [Int] {
     for opCodeIndex in stride(from: finishedProgram.indices.lowerBound, through: finishedProgram.indices.upperBound, by: 4) {
         let opCode = OpCode(rawValue: finishedProgram[opCodeIndex])!
         switch opCode {
-        case .add:
-            let resultIndex = finishedProgram[opCodeIndex + 3]
+        case .add, .multiply:
             let lhsIndex = finishedProgram[opCodeIndex + 1]
             let rhsIndex = finishedProgram[opCodeIndex + 2]
-            finishedProgram[resultIndex] = finishedProgram[lhsIndex] + finishedProgram[rhsIndex]
-        case .multiply:
-            let resultIndex = finishedProgram[opCodeIndex + 3]
-            let lhsIndex = finishedProgram[opCodeIndex + 1]
-            let rhsIndex = finishedProgram[opCodeIndex + 2]
-            finishedProgram[resultIndex] = finishedProgram[lhsIndex] * finishedProgram[rhsIndex]
+            if let result = opCode.performOperation(lhs: finishedProgram[lhsIndex], rhs: finishedProgram[rhsIndex]) {
+                let resultIndex = finishedProgram[opCodeIndex + 3]
+                finishedProgram[resultIndex] = result
+            }
         case .finished:
             return finishedProgram
         }
@@ -152,7 +160,7 @@ func solvePuzzle2Pt2() -> Int? {
 //solvePuzzle2Pt2()
 
 // Day 3 - https://adventofcode.com/2019/day/3
-struct Point {
+struct Point: Hashable {
     let x: Int
     let y: Int
 }
@@ -162,3 +170,53 @@ func manhattanDistance(of point1: Point, to point2: Point) -> Int {
     return point1.x - point2.x + point1.y - point2.y
 }
 
+enum Move: RawRepresentable {
+    case down(Int)
+    case left(Int)
+    case right(Int)
+    case up(Int)
+
+    var rawValue: String {
+        switch self {
+        case let .down(num):
+            return "D\(num)"
+        case let .left(num):
+            return "L\(num)"
+        case let .right(num):
+            return "R\(num)"
+        case let .up(num):
+            return "U\(num)"
+        }
+    }
+
+    init?(rawValue: String) {
+        guard let direction = rawValue.first, let distance = Int(rawValue.dropFirst()) else { return nil }
+        switch direction {
+        case "D":
+            self = .down(distance)
+        case "L":
+            self = .left(distance)
+        case "R":
+            self = .right(distance)
+        case "U":
+            self = .up(distance)
+        default:
+            return nil
+        }
+    }
+}
+
+func parseWireInput() -> Set<Point> {
+    do {
+        let stringInput = try readInput(filename: "day3input")
+        let wires = stringInput.components(separatedBy: .newlines)
+        let instructions = wires.map { $0.components(separatedBy: CharacterSet(charactersIn: ",")).compactMap { Move(rawValue: $0) }}
+        print(instructions)
+        return Set<Point>()
+    } catch {
+        error
+        return Set<Point>()
+    }
+}
+
+parseWireInput()
