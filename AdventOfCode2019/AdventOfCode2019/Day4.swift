@@ -10,12 +10,21 @@ import Foundation
 
 //: Day 4 - https://adventofcode.com/2019/day/4
 
+/// Checks whether the array contains any adjacent digits that are the same
+func twoAdjacentDigitsMatch(in digits: [Int]) -> Bool {
+    digits.indices.dropFirst().contains { digits[$0] == digits[$0 - 1] }
+}
+
+/// Checks whether all elements of the array are bigger than or equal to the previous element
+func digitsAreNotDecreasing(in digits: [Int]) -> Bool {
+    digits.indices.dropFirst().allSatisfy { digits[$0] >= digits[$0 - 1] }
+}
+
 func validatePassword(_ pw: String) -> Bool {
     let digits = pw.compactMap { Int(String($0)) }
     guard digits.count == 6 else { return false }
-    let twoAdjacentDigitsMatch = digits.indices.dropFirst().contains { digits[$0] == digits[$0 - 1] }
-    guard twoAdjacentDigitsMatch else { return false }
-    return digits.indices.dropFirst().allSatisfy { digits[$0] >= digits[$0 - 1] }
+    guard twoAdjacentDigitsMatch(in: digits) else { return false }
+    return digitsAreNotDecreasing(in: digits)
 }
 
 func solvePuzzle4Pt1() -> Int {
@@ -28,21 +37,26 @@ func solvePuzzle4Pt1() -> Int {
 func validatePasswordPt2(_ pw: String) -> Bool {
     let digits = pw.compactMap { Int(String($0)) }
     guard digits.count == 6 else { return false }
-    let digitsAreNotDecreasing = digits.indices.dropFirst().allSatisfy { digits[$0] >= digits[$0 - 1] }
-    guard digitsAreNotDecreasing else { return false }
-    var valid: Bool? = nil
-    for index in digits.indices.dropFirst() {
-        if digits[index] == digits[index - 1] {
-            if index == digits.indices.last {
-                return valid ?? true
-            } else if digits[index] == digits[index + 1] {
-                valid = false
-            } else {
-                return true
-            }
+    guard digitsAreNotDecreasing(in: digits) else { return false }
+    var index = digits.indices.lowerBound
+    while index < digits.indices.upperBound {
+        let digitsFromIndex = digits[index...]
+        let matchingDigits = digitsFromIndex.prefix(while: { $0 == digits[index] })
+        if matchingDigits.count == 2 {
+            return true
+        } else if matchingDigits.count == digitsFromIndex.count {
+            return false
         }
+        index += matchingDigits.count
     }
-    return valid ?? false
+    return false
+}
+
+func puzzle4Pt2Examples() {
+    let testPasswordsAndValidities: [(pw:String, valid: Bool)] = [("112233",true), ("123444",false), ("111122",true), ("566678",false)]
+    testPasswordsAndValidities.forEach {
+        print("\($0.pw) should be: \($0.valid), result: \(validatePasswordPt2($0.pw))")
+    }
 }
 
 func solvePuzzle4Pt2() -> Int {
