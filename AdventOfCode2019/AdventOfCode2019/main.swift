@@ -26,7 +26,9 @@ print("Pt2")
 print(solvePuzzle3Pt2()?.description ?? "Failed")
 puzzleDay(n: 4)
 print("Pt1")
-print(solvePuzzle4Pt1())
+let puzzle4Pt1Expected = 945
+print("Expected: \(puzzle4Pt1Expected)")
+print("Actual: \(solvePuzzle4Pt1())")
 print("Pt2")
 puzzle4Pt2Examples()
 let puzzle4Pt2Expected = 617

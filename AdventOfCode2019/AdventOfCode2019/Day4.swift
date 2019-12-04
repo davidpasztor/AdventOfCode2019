@@ -20,24 +20,13 @@ func digitsAreNotDecreasing(in digits: [Int]) -> Bool {
     digits.indices.dropFirst().allSatisfy { digits[$0] >= digits[$0 - 1] }
 }
 
-func validatePassword(_ pw: String) -> Bool {
-    let digits = pw.compactMap { Int(String($0)) }
-    guard digits.count == 6 else { return false }
-    guard twoAdjacentDigitsMatch(in: digits) else { return false }
-    return digitsAreNotDecreasing(in: digits)
+/// Checks whether `digits` has 6 elements
+func sixDigitsLong(in digits: [Int]) -> Bool {
+    return digits.count == 6
 }
 
-func solvePuzzle4Pt1() -> Int {
-    let inputRange = 264360...746325
-    let passwordsInRange = inputRange.map(String.init)
-    let validPasswordsInRange = passwordsInRange.filter { validatePassword($0) }
-    return validPasswordsInRange.count
-}
-
-func validatePasswordPt2(_ pw: String) -> Bool {
-    let digits = pw.compactMap { Int(String($0)) }
-    guard digits.count == 6 else { return false }
-    guard digitsAreNotDecreasing(in: digits) else { return false }
+/// Checks whether there is at least one pair of adjacent digits that are the same, but aren't in a larger group of same digits
+func groupOfOnlyTwoDigitsMatch(in digits: [Int]) -> Bool {
     var index = digits.indices.lowerBound
     while index < digits.indices.upperBound {
         let digitsFromIndex = digits[index...]
@@ -52,16 +41,30 @@ func validatePasswordPt2(_ pw: String) -> Bool {
     return false
 }
 
+/// Checks whether `pw` satisfies all `rules`
+func validatePassword(_ pw: String, rules: ([Int]) -> Bool...) -> Bool {
+    let digits = pw.compactMap { Int(String($0)) }
+    return rules.allSatisfy { validate in validate(digits) }
+}
+
+func solvePuzzle4Pt1() -> Int {
+    let inputRange = 264360...746325
+    let passwordsInRange = inputRange.map(String.init)
+    let validPasswordsInRange = passwordsInRange.filter { validatePassword($0, rules: sixDigitsLong, digitsAreNotDecreasing, twoAdjacentDigitsMatch) }
+    return validPasswordsInRange.count
+}
+
 func puzzle4Pt2Examples() {
     let testPasswordsAndValidities: [(pw:String, valid: Bool)] = [("112233",true), ("123444",false), ("111122",true), ("566678",false)]
     testPasswordsAndValidities.forEach {
-        print("\($0.pw) should be: \($0.valid), result: \(validatePasswordPt2($0.pw))")
+        let isValid = validatePassword($0.pw, rules: sixDigitsLong, digitsAreNotDecreasing, groupOfOnlyTwoDigitsMatch)
+        print("\($0.pw) should be: \($0.valid), result: \(isValid)")
     }
 }
 
 func solvePuzzle4Pt2() -> Int {
     let inputRange = 264360...746325
     let passwordsInRange = inputRange.map { $0.description }
-    let validPasswordsInRange = passwordsInRange.filter { validatePasswordPt2($0) }
+    let validPasswordsInRange = passwordsInRange.filter { validatePassword($0, rules: sixDigitsLong, digitsAreNotDecreasing, groupOfOnlyTwoDigitsMatch) }
     return validPasswordsInRange.count
 }
