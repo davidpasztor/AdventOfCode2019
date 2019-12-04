@@ -229,19 +229,37 @@ func parseWireInput(_ string: String) -> Pair<[Move]> {
 }
 
 /// Get the set of points making up a wire
-func pointsOnAWire(_ wire: [Move], startingPoint: Point) -> Set<Point> {
-    let emptyResult = (Set<Point>(),startingPoint)
+func pointsOnAWire(_ wire: [Move], startingPoint: Point) -> [Point] {
+    let emptyResult = ([Point](),startingPoint)
     return wire.reduce(emptyResult, { result, move in
         let (pointsTouched, currentPoint) = result
         let newPoints = move.createPointsForMove(from: currentPoint)
-        return (pointsTouched.union(newPoints), newPoints.last!)
+        return (pointsTouched + newPoints, newPoints.last!)
     }).0
 }
 
-func findClosestIntersection(to centralPort: Point, wire1: Set<Point>, wire2: Set<Point>) -> Int? {
-    let intersections = wire1.intersection(wire2)
+/// Find the intersection of `wire1` and `wire2` closest to `centralPort` based on Manhattan distances
+func findClosestIntersection(to centralPort: Point, wire1: [Point], wire2: [Point]) -> Int? {
+    let intersections = Set(wire1).intersection(wire2)
     let intersectionDistancesFromCentralPort = intersections.map { manhattanDistance(of: $0, to: centralPort) }
     return intersectionDistancesFromCentralPort.min()
+}
+
+/// The number of coordinates touched (steps) by a wire until it reaches `destination`
+/// - precondition: `destination` is an element of `wire`
+func stepsToReach(_ destination: Point, on wire: [Point]) -> Int {
+    precondition(wire.contains(destination), "`destination` should be an element of `wire`")
+    let wirePathsUntilDestination = wire.prefix(while: { $0 != destination })
+    return wirePathsUntilDestination.enumerated().reduce(0, { steps, current in
+        return steps + manhattanDistance(of: current.element, to: wire[current.offset + 1])
+    }) + 1 // need to add an extra step, because we aren't iterating over the last point
+}
+
+/// Find the intersection of `wire1` and `wire2` where the number of steps the wires take to reach the intersection from `centralPort` is the smallest
+func findShortestPathIntersection(from centralPort: Point, wire1: [Point], wire2: [Point]) -> Int {
+    let intersections = Set(wire1).intersection(wire2)
+    let intersectionDistancesFromCentralPort = intersections.map { stepsToReach($0, on: wire1) + stepsToReach($0, on: wire2) }
+    return intersectionDistancesFromCentralPort.min()!
 }
 
 let centralPortLocation = Point(x: 0, y: 0)
@@ -282,3 +300,21 @@ func solvePuzzle3Pt1() -> Int? {
 }
 
 solvePuzzle3Pt1()
+
+[example1, ex2, ex3].forEach { wireSpecInput in
+    let wires = parseWireInput(wireSpecInput)
+    let firstWirePoints = pointsOnAWire(wires.left, startingPoint: centralPortLocation)
+    let secondWirePoints = pointsOnAWire(wires.right, startingPoint: centralPortLocation)
+    findShortestPathIntersection(from: Point(x: 0, y: 0), wire1: firstWirePoints, wire2: secondWirePoints)
+}
+
+func solvePuzzle3Pt2() -> Int? {
+    guard let stringInput = try? readInput(filename: "day3input") else { return nil }
+    let wires = parseWireInput(stringInput)
+    let centralPortLocation = Point(x: 0, y: 0)
+    let firstWirePoints = pointsOnAWire(wires.left, startingPoint: centralPortLocation)
+    let secondWirePoints = pointsOnAWire(wires.right, startingPoint: centralPortLocation)
+    return findShortestPathIntersection(from: centralPortLocation, wire1: firstWirePoints, wire2: secondWirePoints)
+}
+
+solvePuzzle3Pt2()
