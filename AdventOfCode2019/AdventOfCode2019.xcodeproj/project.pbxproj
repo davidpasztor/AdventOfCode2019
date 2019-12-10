@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		260191D3239A5955000A3404 /* Day6.swift in Sources */ = {isa = PBXBuildFile; fileRef = 260191D2239A5955000A3404 /* Day6.swift */; };
 		2697BA392397D83C0007E3E3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2697BA382397D83C0007E3E3 /* main.swift */; };
 		2697BA402397D8510007E3E3 /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2697BA3F2397D8510007E3E3 /* Helpers.swift */; };
 		2697BA422397D8710007E3E3 /* Day1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2697BA412397D8710007E3E3 /* Day1.swift */; };
@@ -17,6 +18,9 @@
 		2697BA5823980C4A0007E3E3 /* day2input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2697BA4B23980A570007E3E3 /* day2input.txt */; };
 		2697BA5923980C4D0007E3E3 /* day3input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2697BA4C23980A570007E3E3 /* day3input.txt */; };
 		2697BA5A23980C6F0007E3E3 /* InputResources.bundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2697BA5123980C1E0007E3E3 /* InputResources.bundle */; };
+		26EA1E06239915AC0069BBC3 /* Day5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26EA1E05239915AC0069BBC3 /* Day5.swift */; };
+		26EA1E0823991A620069BBC3 /* day5input.txt in Resources */ = {isa = PBXBuildFile; fileRef = 26EA1E0723991A620069BBC3 /* day5input.txt */; };
+		26EA1E0A23991ABE0069BBC3 /* IntcodeProgram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26EA1E0923991ABD0069BBC3 /* IntcodeProgram.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,6 +37,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		260191D2239A5955000A3404 /* Day6.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Day6.swift; sourceTree = "<group>"; };
 		2697BA352397D83C0007E3E3 /* AdventOfCode2019 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AdventOfCode2019; sourceTree = BUILT_PRODUCTS_DIR; };
 		2697BA382397D83C0007E3E3 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		2697BA3F2397D8510007E3E3 /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
@@ -45,6 +50,9 @@
 		2697BA4C23980A570007E3E3 /* day3input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = day3input.txt; sourceTree = "<group>"; };
 		2697BA5123980C1E0007E3E3 /* InputResources.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InputResources.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		2697BA5323980C1E0007E3E3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		26EA1E05239915AC0069BBC3 /* Day5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Day5.swift; sourceTree = "<group>"; };
+		26EA1E0723991A620069BBC3 /* day5input.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = day5input.txt; sourceTree = "<group>"; };
+		26EA1E0923991ABD0069BBC3 /* IntcodeProgram.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntcodeProgram.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +98,9 @@
 				2697BA432397D8850007E3E3 /* Day2.swift */,
 				2697BA472397D8950007E3E3 /* Day3.swift */,
 				2697BA452397D88D0007E3E3 /* Day4.swift */,
+				26EA1E05239915AC0069BBC3 /* Day5.swift */,
+				260191D2239A5955000A3404 /* Day6.swift */,
+				26EA1E0923991ABD0069BBC3 /* IntcodeProgram.swift */,
 				2697BA3F2397D8510007E3E3 /* Helpers.swift */,
 				2697BA382397D83C0007E3E3 /* main.swift */,
 			);
@@ -102,6 +113,7 @@
 				2697BA4A23980A570007E3E3 /* day1input.txt */,
 				2697BA4B23980A570007E3E3 /* day2input.txt */,
 				2697BA4C23980A570007E3E3 /* day3input.txt */,
+				26EA1E0723991A620069BBC3 /* day5input.txt */,
 				2697BA5323980C1E0007E3E3 /* Info.plist */,
 			);
 			path = InputResources;
@@ -188,6 +200,7 @@
 			files = (
 				2697BA5723980C470007E3E3 /* day1input.txt in Resources */,
 				2697BA5923980C4D0007E3E3 /* day3input.txt in Resources */,
+				26EA1E0823991A620069BBC3 /* day5input.txt in Resources */,
 				2697BA5823980C4A0007E3E3 /* day2input.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -200,10 +213,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				2697BA392397D83C0007E3E3 /* main.swift in Sources */,
+				26EA1E06239915AC0069BBC3 /* Day5.swift in Sources */,
 				2697BA462397D88D0007E3E3 /* Day4.swift in Sources */,
 				2697BA442397D8850007E3E3 /* Day2.swift in Sources */,
 				2697BA422397D8710007E3E3 /* Day1.swift in Sources */,
+				26EA1E0A23991ABE0069BBC3 /* IntcodeProgram.swift in Sources */,
 				2697BA482397D8950007E3E3 /* Day3.swift in Sources */,
+				260191D3239A5955000A3404 /* Day6.swift in Sources */,
 				2697BA402397D8510007E3E3 /* Helpers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

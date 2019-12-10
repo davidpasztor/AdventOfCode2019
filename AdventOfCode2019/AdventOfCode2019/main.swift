@@ -34,3 +34,5 @@ puzzle4Pt2Examples()
 let puzzle4Pt2Expected = 617
 print("Expected: \(puzzle4Pt2Expected)")
 print("Actual: \(solvePuzzle4Pt2())")
+puzzleDay(n: 5)
+puzzle5Examples()
