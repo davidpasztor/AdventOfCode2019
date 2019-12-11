@@ -9,6 +9,7 @@
 import Foundation
 
 print("Welcome to Advent of Code 2019!")
+/*
 puzzleDay(n: 1)
 print("Pt1")
 print(solvePuzzle1Pt1()?.description ?? "Failed")
@@ -36,3 +37,6 @@ print("Expected: \(puzzle4Pt2Expected)")
 print("Actual: \(solvePuzzle4Pt2())")
 puzzleDay(n: 5)
 puzzle5Examples()
+*/
+puzzleDay(n: 10)
+puzzle10Examples()

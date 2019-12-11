@@ -9,10 +9,6 @@
 import Foundation
 
 // Day 3 - https://adventofcode.com/2019/day/3
-struct Point: Hashable {
-    let x: Int
-    let y: Int
-}
 
 // Manhattan distance equation https://en.wikipedia.org/wiki/Taxicab_geometry
 func manhattanDistance(of point1: Point, to point2: Point) -> Int {
