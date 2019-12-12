@@ -39,4 +39,6 @@ puzzleDay(n: 5)
 puzzle5Examples()
 */
 puzzleDay(n: 10)
-puzzle10Examples()
+//puzzle10Examples()
+puzzleDay(n: 12)
+puzzle12Examples()
