@@ -26,8 +26,14 @@ struct Vector {
 
     /// Reduce `self` to be the smallest `Vector` with `Int` movements in the same direction as the original vector
     func unitVector() -> Vector {
-        if diffX == 0 || diffY == 0 { // 0.isMultiple(of: num) returns `true`, but then `scale` would become `0`, by which we cannot reduce the vector
-            return self
+        if diffX == 0 {
+            if diffY == 0 {
+                return self // 0.isMultiple(of: num) returns `true`, but then `scale` would become `0`, by which we cannot reduce the vector
+            } else {
+                return reduced(by: diffY) // If only one of the components are 0, we can reduce the other component to 1
+            }
+        } else if diffY == 0 {
+            return reduced(by: diffX) // If only one of the components are 0, we can reduce the other component to 1
         } else if diffY.isMultiple(of: diffX) {
             return reduced(by: diffX)
         } else if diffX.isMultiple(of: diffY) {

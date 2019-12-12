@@ -24,11 +24,13 @@ func parseAsteroidMap(_ map: String) -> [Point] {
 
 /// Returns an `[Point]` representing all points on the straight line drawn between `startingPoint` and `otherPoint` ending at the edge of the coordinate system (`maxX` and `maxY` for the x and y axis respectively)
 func pointsOnLine(from startingPoint: Point, through otherPoint: Point, maxX: Int, maxY: Int) -> [Point] {
+    // Avoid an infinite loop caused by `vectorBetweenPoints` being (0,0) if the two points are the same
+    guard startingPoint != otherPoint else  { return [] }
     var line = [Point]()
     // Draw the vector between the two points, then reduce it to the minimal possible size with `Int` coordinates in the same direction as the original vector
     let vectorBetweenPoints = Vector(diffX: otherPoint.x - startingPoint.x, diffY: otherPoint.y - startingPoint.y).unitVector()
     var point = otherPoint.movedBy(vector: vectorBetweenPoints)
-    while point.x <= maxX && point.y <= maxY {
+    while point.x <= maxX && point.y <= maxY && point.x >= 0 && point.y >= 0 {
         line.append(point)
         point = point.movedBy(vector: vectorBetweenPoints)
     }
@@ -53,20 +55,22 @@ func blockedAsteroids(from asteroid: Point, by otherAsteroid: Point, asteroidMap
 }
 
 func numberOfVisibleAsteroids(from asteroid: Point, on asteroidMap: [Point]) -> Int {
-    var visibleAsteroids = Set(asteroidMap)
-    for otherAsteroid in asteroidMap {
+    let otherAsteroids = Set(asteroidMap).subtracting([asteroid])
+    var visibleAsteroids = otherAsteroids
+    for otherAsteroid in otherAsteroids {
         let blockedByAsteroid = blockedAsteroids(from: asteroid, by: otherAsteroid, asteroidMap: visibleAsteroids)
-        blockedByAsteroid.forEach { visibleAsteroids.remove($0) }
-        if visibleAsteroids.count == 1 { // if its only the `asteroid` itself left, return early
+        visibleAsteroids.subtract(blockedByAsteroid)
+        if visibleAsteroids.count == 0 { // if it's only the `asteroid` itself left, return early
             return 0
         }
     }
-    return visibleAsteroids.count - 1 // account for `asteroid` itself, which isn't visible from its own coordinates
+    return visibleAsteroids.count
 }
 
 func findBestLocationForMonitoringStation(on asteroidMap: [Point]) -> Point {
-    let result = asteroidMap.map { point in (numberOfVisibleAsteroids(from: point, on: asteroidMap), point ) }
-    return result.max(by: {$0.0 < $1.0})!.1
+    let numberOfVisibleAsteroidsFromEachAsteroid = asteroidMap.map { numberOfVisibleAsteroids(from: $0, on: asteroidMap) }
+    let bestIndex = numberOfVisibleAsteroidsFromEachAsteroid.enumerated().max(by: {$0.element < $1.element})!.offset
+    return asteroidMap[bestIndex]
 }
 
 let exampleMap1 = """
@@ -154,25 +158,22 @@ let lineOfSightExample = """
 
 func puzzle10Examples() {
     let asteroidMap1 = parseAsteroidMap(exampleMap1)
-    print(asteroidMap1)
+    print("Example map 1\n", asteroidMap1)
     print("points on line from (0,0) to (3,1)")
     print(pointsOnLine(from: Point(x: 0, y: 0), through: Point(x: 3, y: 1), maxX: 9, maxY: 9))
     let asteroidMap2 = parseAsteroidMap(exampleMap2)
-    //print(asteroidMap2)
+    print("Example map 2\n", asteroidMap2)
     let lineOfSightMap = parseAsteroidMap(lineOfSightExample)
     print("Blocked by point (3,3) from (0,0) on 10x10 map")
     print(blockedAsteroids(from: Point(x: 0, y: 0), by: Point(x: 3, y: 3), asteroidMap: Set(lineOfSightMap)))
     print("Blocked by point (2,3) from (0,0) on 10x10 map")
     print(blockedAsteroids(from: Point(x: 0, y: 0), by: Point(x: 2, y: 3), asteroidMap: Set(lineOfSightMap)))
-    print("number of visible asteroids from (1,0)")
-    print(numberOfVisibleAsteroids(from: Point(x: 1, y: 0), on: asteroidMap1))
-    /*
-    print(numberOfVisibleAsteroids(from: Point(x: 0, y: 2), on: asteroidMap1))
-    print("Best location for example1: \(findBestLocationForMonitoringStation(on: asteroidMap1))")
-    print(parseAsteroidMap(exampleMap2))
+    let point1 = Point(x: 4, y: 0)
+    print("number of visible asteroids from \(point1) on Example1", numberOfVisibleAsteroids(from: point1, on: asteroidMap1))
+    let point2 = Point(x: 3, y: 4)
+    print("number of visible asteroids from \(point2) on Example1", numberOfVisibleAsteroids(from: point2, on: asteroidMap1))
     let examplesMaps = [exampleMap1, exampleMap2, exampleMap3, exampleMap4, exampleMap5].map { parseAsteroidMap($0) }
     examplesMaps.enumerated().forEach { index, asteroidMap in
         print("Best location for example\(index+1): \(findBestLocationForMonitoringStation(on: asteroidMap))")
     }
- */
 }

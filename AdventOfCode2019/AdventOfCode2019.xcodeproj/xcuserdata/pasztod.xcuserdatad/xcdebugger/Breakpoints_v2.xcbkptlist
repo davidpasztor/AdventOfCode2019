@@ -3,4 +3,86 @@
    uuid = "A908E43C-2429-438B-B9C2-8D6F7F6740B0"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "BC98F1A9-7536-4A8D-87A2-04E0871F5094"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "AdventOfCode2019/Day10.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "72"
+            endingLineNumber = "72"
+            landmarkName = "findBestLocationForMonitoringStation(on:)"
+            landmarkType = "9">
+            <Locations>
+               <Location
+                  uuid = "BC98F1A9-7536-4A8D-87A2-04E0871F5094 - adea681ac43929b0"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "AdventOfCode2019.findBestLocationForMonitoringStation(on: Swift.Array&lt;AdventOfCode2019.Point&gt;) -&gt; AdventOfCode2019.Point"
+                  moduleName = "AdventOfCode2019"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pasztod/Developer/AdventOfCode2019/AdventOfCode2019/AdventOfCode2019/Day10.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "72"
+                  endingLineNumber = "72"
+                  offsetFromSymbolStart = "279">
+               </Location>
+               <Location
+                  uuid = "BC98F1A9-7536-4A8D-87A2-04E0871F5094 - da90d472f190cbe5"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #2 ((offset: Swift.Int, element: Swift.Int), (offset: Swift.Int, element: Swift.Int)) -&gt; Swift.Bool in AdventOfCode2019.findBestLocationForMonitoringStation(on: Swift.Array&lt;AdventOfCode2019.Point&gt;) -&gt; AdventOfCode2019.Point"
+                  moduleName = "AdventOfCode2019"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pasztod/Developer/AdventOfCode2019/AdventOfCode2019/AdventOfCode2019/Day10.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "72"
+                  endingLineNumber = "72"
+                  offsetFromSymbolStart = "31">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "7B74F445-4ADC-4E3E-B176-D8A6160552EB"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "AdventOfCode2019/Day10.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "61"
+            endingLineNumber = "61"
+            landmarkName = "numberOfVisibleAsteroids(from:on:)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6A38E969-B36F-4CD1-9D24-51974031C2E0"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "AdventOfCode2019/Day10.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "63"
+            endingLineNumber = "63"
+            landmarkName = "numberOfVisibleAsteroids(from:on:)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>
