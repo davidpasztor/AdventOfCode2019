@@ -80,7 +80,7 @@ extension MoonVelocity: CustomStringConvertible {
     }
 }
 
-//// Represents a `Moon`
+/// Represents a `Moon`
 class Moon {
     /// Current position of the moon
     var position: MoonPosition
@@ -88,7 +88,8 @@ class Moon {
     var velocity: MoonVelocity
 
     /// Initialise with a position and velocity
-    /// - parameter velocity: default value is `.zero`
+    /// - parameter position: initial position of the Moon
+    /// - parameter velocity: initial velocity, default value is `.zero`
     init(position: MoonPosition, velocity: MoonVelocity = .zero) {
         self.position = position
         self.velocity = velocity
@@ -104,6 +105,18 @@ class Moon {
     /// Update the `position` of the moon by applying its current `velocity` to it
     func applyVelocity() {
         position = position.applyVelocity(velocity)
+    }
+
+    var potentialEnergy: Int {
+        return abs(position.x) + abs(position.y) + abs(position.z)
+    }
+
+    var kineticEnergy: Int {
+        return abs(velocity.dx) + abs(velocity.dy) + abs(velocity.dz)
+    }
+
+    var totalEnergy: Int {
+        return potentialEnergy * kineticEnergy
     }
 }
 
@@ -148,6 +161,10 @@ func simulateSteps(n: Int, startingMoonState: [Moon]) {
     }
 }
 
+func totalEnergyOfSystem(_ moons: [Moon]) -> Int {
+    return moons.reduce(0, { $0 + $1.totalEnergy })
+}
+
 func puzzle12Examples() {
     let example1Input = """
         <x=-1, y=0, z=2>
@@ -163,6 +180,8 @@ func puzzle12Examples() {
         print("Position after \(i) steps:")
         print(currentMoonStates)
     }
+    let totalEnergyOfEx1 = totalEnergyOfSystem(currentMoonStates)
+    print("Total energy of the system after 10 steps: \(totalEnergyOfEx1)")
 
     let example2Input = """
     <x=-8, y=-10, z=0>
@@ -174,4 +193,20 @@ func puzzle12Examples() {
     simulateSteps(n: 100, startingMoonState: startingMoonState2)
     print("Example 2 after 100 steps:")
     print(startingMoonState2)
+    let totalEnergyOfEx2 = totalEnergyOfSystem(startingMoonState2)
+    print("Total energy of the system after 100 steps: \(totalEnergyOfEx2)")
+}
+
+func solvePuzzle12Pt1() -> Int {
+    //let input = try! readInput(filename: "day12input")
+    let input = """
+    <x=13, y=9, z=5>
+    <x=8, y=14, z=-2>
+    <x=-5, y=4, z=11>
+    <x=2, y=-6, z=1>
+    """
+    let startingMoonPositions = parseMoonPositions(from: input)
+    let moonState = startingMoonPositions.map { Moon(position: $0) }
+    simulateSteps(n: 1000, startingMoonState: moonState)
+    return totalEnergyOfSystem(moonState)
 }
