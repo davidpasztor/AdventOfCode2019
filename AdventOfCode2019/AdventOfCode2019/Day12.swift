@@ -80,6 +80,39 @@ extension MoonVelocity: CustomStringConvertible {
     }
 }
 
+//// Represents a `Moon`
+class Moon {
+    /// Current position of the moon
+    var position: MoonPosition
+    /// Current velocity of the moon
+    var velocity: MoonVelocity
+
+    /// Initialise with a position and velocity
+    /// - parameter velocity: default value is `.zero`
+    init(position: MoonPosition, velocity: MoonVelocity = .zero) {
+        self.position = position
+        self.velocity = velocity
+    }
+
+    /// Update the position of a moon after applying the gravitational force exerted by `otherMoon`
+    func applyGravity(from otherMoons: [Moon]) {
+        let totalGravity = position.calculateTotalGravity(from: otherMoons.map { $0.position })
+        velocity += totalGravity
+        position = position.applyVelocity(velocity)
+    }
+
+    /// Update the `position` of the moon by applying its current `velocity` to it
+    func applyVelocity() {
+        position = position.applyVelocity(velocity)
+    }
+}
+
+extension Moon: CustomStringConvertible {
+    var description: String {
+        return "pos=\(position), vel=\(velocity)"
+    }
+}
+
 /// Parse an array of `MoonPosition`s from a multiline input where each line is in the form "<x=-1, y=0, z=2>"
 func parseMoonPositions(from input: String) -> [MoonPosition] {
     let rawMoonPositions = input.components(separatedBy: .newlines)
@@ -99,12 +132,20 @@ func parseMoonPositions(from input: String) -> [MoonPosition] {
     return moonPositions
 }
 
-func simulateMotionOfMoons(currentPositions: [MoonPosition]) -> [MoonPosition] {
-    // 1. Update the velocity of every moon by applying gravity
-    let velocities = currentPositions.map { $0.calculateTotalGravity(from: currentPositions) }
-    // 2. After the velocity of all moons have been updated, update the position of every moon by applying velocity
-    let updatedPositions = zip(currentPositions, velocities).map { $0.0.applyVelocity($0.1)}
-    return updatedPositions
+func simulateMotionOfMoons(currentMoonState: [Moon]) {
+    let currentMoonPositions = currentMoonState.map { $0.position }
+    // 1. Calculate the gravity applied to each moon by all other moons
+    let totalGravities = currentMoonState.map { $0.position.calculateTotalGravity(from: currentMoonPositions)}
+    // 2. Update the velocity of every moon by applying gravity
+    currentMoonState.enumerated().forEach { $0.element.velocity += totalGravities[$0.offset] }
+    // 3. After the velocity of all moons have been updated, update the position of every moon by applying velocity
+    currentMoonState.forEach { $0.applyVelocity() }
+}
+
+func simulateSteps(n: Int, startingMoonState: [Moon]) {
+    for _ in 1...n {
+        simulateMotionOfMoons(currentMoonState: startingMoonState)
+    }
 }
 
 func puzzle12Examples() {
@@ -116,10 +157,21 @@ func puzzle12Examples() {
     """
     let example1StartingPositions = parseMoonPositions(from: example1Input)
     print(example1StartingPositions)
-    var currentMoonPositions = example1StartingPositions
+    let currentMoonStates = example1StartingPositions.map { Moon(position: $0) }
     for i in 1...10 {
-        currentMoonPositions = simulateMotionOfMoons(currentPositions: currentMoonPositions)
+        simulateMotionOfMoons(currentMoonState: currentMoonStates)
         print("Position after \(i) steps:")
-        print(currentMoonPositions)
+        print(currentMoonStates)
     }
+
+    let example2Input = """
+    <x=-8, y=-10, z=0>
+    <x=5, y=5, z=10>
+    <x=2, y=-7, z=3>
+    <x=9, y=-8, z=-3>
+    """
+    let startingMoonState2 = parseMoonPositions(from: example2Input).map { Moon(position: $0) }
+    simulateSteps(n: 100, startingMoonState: startingMoonState2)
+    print("Example 2 after 100 steps:")
+    print(startingMoonState2)
 }
