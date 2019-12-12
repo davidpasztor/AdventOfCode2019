@@ -14,6 +14,7 @@ struct MoonPosition {
     let y: Int
     let z: Int
 
+    /// Calculates the gravitational velocity exerted by `otherMoon`
     func calculateGravity(from otherMoon: MoonPosition) -> MoonVelocity {
         func calculateVelocity(position: Int, otherPosition: Int) -> Int {
             if position > otherPosition {
@@ -28,16 +29,6 @@ struct MoonPosition {
         let yVelocity = calculateVelocity(position: y, otherPosition: otherMoon.y)
         let zVelocity = calculateVelocity(position: z, otherPosition: otherMoon.z)
         return MoonVelocity(dx: xVelocity, dy: yVelocity, dz: zVelocity)
-    }
-
-    func calculateTotalGravity(from otherMoons: [MoonPosition]) -> MoonVelocity {
-        return otherMoons.reduce(into: MoonVelocity.zero, { $0 += calculateGravity(from: $1) })
-    }
-
-    /// Calculate the position of a moon after applying the gravitational force exerted by `otherMoon`
-    func applyGravity(from otherMoons: [MoonPosition]) -> MoonPosition {
-        let totalGravity = calculateTotalGravity(from: otherMoons)
-        return applyVelocity(totalGravity)
     }
 
     /// Apply `velocity` to `position`
@@ -95,11 +86,10 @@ class Moon {
         self.velocity = velocity
     }
 
-    /// Update the position of a moon after applying the gravitational force exerted by `otherMoon`
-    func applyGravity(from otherMoons: [Moon]) {
-        let totalGravity = position.calculateTotalGravity(from: otherMoons.map { $0.position })
-        velocity += totalGravity
-        position = position.applyVelocity(velocity)
+    /// Calculates the total gravitational velocity exerted on this moon by all other moons
+    /// - parameter otherMoons: all other moons in the system exerting gravity on this moon
+    func calculateTotalGravity(from otherMoons: [Moon]) -> MoonVelocity {
+        return otherMoons.reduce(into: MoonVelocity.zero, { $0 += position.calculateGravity(from: $1.position) })
     }
 
     /// Update the `position` of the moon by applying its current `velocity` to it
@@ -146,9 +136,8 @@ func parseMoonPositions(from input: String) -> [MoonPosition] {
 }
 
 func simulateMotionOfMoons(currentMoonState: [Moon]) {
-    let currentMoonPositions = currentMoonState.map { $0.position }
     // 1. Calculate the gravity applied to each moon by all other moons
-    let totalGravities = currentMoonState.map { $0.position.calculateTotalGravity(from: currentMoonPositions)}
+    let totalGravities = currentMoonState.map { $0.calculateTotalGravity(from: currentMoonState)}
     // 2. Update the velocity of every moon by applying gravity
     currentMoonState.enumerated().forEach { $0.element.velocity += totalGravities[$0.offset] }
     // 3. After the velocity of all moons have been updated, update the position of every moon by applying velocity
@@ -198,7 +187,6 @@ func puzzle12Examples() {
 }
 
 func solvePuzzle12Pt1() -> Int {
-    //let input = try! readInput(filename: "day12input")
     let input = """
     <x=13, y=9, z=5>
     <x=8, y=14, z=-2>
