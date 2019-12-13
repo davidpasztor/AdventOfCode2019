@@ -9,7 +9,7 @@
 import Foundation
 
 /// Position of a moon in space
-struct MoonPosition {
+struct MoonPosition: Hashable {
     let x: Int
     let y: Int
     let z: Int
@@ -44,7 +44,7 @@ extension MoonPosition: CustomStringConvertible {
 }
 
 /// Velocity of a moon in space
-struct MoonVelocity {
+struct MoonVelocity: Hashable {
     let dx: Int
     let dy: Int
     let dz: Int
@@ -110,6 +110,19 @@ class Moon {
     }
 }
 
+extension Moon: Equatable {
+    static func == (lhs: Moon, rhs: Moon) -> Bool {
+        return lhs.position == rhs.position && lhs.velocity == rhs.velocity
+    }
+}
+
+extension Moon: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(position)
+        hasher.combine(velocity)
+    }
+}
+
 extension Moon: CustomStringConvertible {
     var description: String {
         return "pos=\(position), vel=\(velocity)"
@@ -154,31 +167,35 @@ func totalEnergyOfSystem(_ moons: [Moon]) -> Int {
     return moons.reduce(0, { $0 + $1.totalEnergy })
 }
 
+private let example1Input = """
+    <x=-1, y=0, z=2>
+    <x=2, y=-10, z=-7>
+    <x=4, y=-8, z=8>
+    <x=3, y=5, z=-1>
+"""
+
+private let example1StartingPositions = parseMoonPositions(from: example1Input)
+
+private let example2Input = """
+<x=-8, y=-10, z=0>
+<x=5, y=5, z=10>
+<x=2, y=-7, z=3>
+<x=9, y=-8, z=-3>
+"""
+private let example2StartingPositions = parseMoonPositions(from: example2Input)
+
 func puzzle12Examples() {
-    let example1Input = """
-        <x=-1, y=0, z=2>
-        <x=2, y=-10, z=-7>
-        <x=4, y=-8, z=8>
-        <x=3, y=5, z=-1>
-    """
-    let example1StartingPositions = parseMoonPositions(from: example1Input)
     print(example1StartingPositions)
-    let currentMoonStates = example1StartingPositions.map { Moon(position: $0) }
+    let example1MoonStates = example1StartingPositions.map { Moon(position: $0) }
     for i in 1...10 {
-        simulateMotionOfMoons(currentMoonState: currentMoonStates)
+        simulateMotionOfMoons(currentMoonState: example1MoonStates)
         print("Position after \(i) steps:")
-        print(currentMoonStates)
+        print(example1MoonStates)
     }
-    let totalEnergyOfEx1 = totalEnergyOfSystem(currentMoonStates)
+    let totalEnergyOfEx1 = totalEnergyOfSystem(example1MoonStates)
     print("Total energy of the system after 10 steps: \(totalEnergyOfEx1)")
 
-    let example2Input = """
-    <x=-8, y=-10, z=0>
-    <x=5, y=5, z=10>
-    <x=2, y=-7, z=3>
-    <x=9, y=-8, z=-3>
-    """
-    let startingMoonState2 = parseMoonPositions(from: example2Input).map { Moon(position: $0) }
+    let startingMoonState2 = example2StartingPositions.map { Moon(position: $0) }
     simulateSteps(n: 100, startingMoonState: startingMoonState2)
     print("Example 2 after 100 steps:")
     print(startingMoonState2)
@@ -186,7 +203,7 @@ func puzzle12Examples() {
     print("Total energy of the system after 100 steps: \(totalEnergyOfEx2)")
 }
 
-func solvePuzzle12Pt1() -> Int {
+func parsePuzzle12Input() -> [Moon] {
     let input = """
     <x=13, y=9, z=5>
     <x=8, y=14, z=-2>
@@ -195,6 +212,42 @@ func solvePuzzle12Pt1() -> Int {
     """
     let startingMoonPositions = parseMoonPositions(from: input)
     let moonState = startingMoonPositions.map { Moon(position: $0) }
+    return moonState
+}
+
+func solvePuzzle12Pt1() -> Int {
+    let moonState = parsePuzzle12Input()
     simulateSteps(n: 1000, startingMoonState: moonState)
     return totalEnergyOfSystem(moonState)
+}
+
+/// Given the starting state of a system of `Moon`s, find the number of steps it takes for the system to get back to a state in which it previously was
+func findTimeLoop(startingState: [Moon]) -> Int {
+    var matchingPreviousState = false
+    var previousStates = Set<Int>()
+    let saveSystemState: ([Moon]) -> Void = { system in
+        var hasher = Hasher()
+        hasher.combine(startingState)
+        let systemState = previousStates.insert(hasher.finalize())
+        matchingPreviousState = systemState.inserted == false
+    }
+    while !matchingPreviousState {
+        simulateMotionOfMoons(currentMoonState: startingState)
+        saveSystemState(startingState)
+    }
+    return previousStates.count
+}
+
+func puzzle12Pt2Examples() {
+    let example1MoonStates = example1StartingPositions.map { Moon(position: $0) }
+    let daysToRepeatEx1 = findTimeLoop(startingState: example1MoonStates)
+    print("It takes example1 \(daysToRepeatEx1) days to repeat its state")
+    let example2MoonStates = example2StartingPositions.map { Moon(position: $0) }
+    let daysToRepeatEx2 = findTimeLoop(startingState: example2MoonStates)
+    print("It takes example2 \(daysToRepeatEx2) days to repeat its state")
+}
+
+func solvePuzzle12Pt2() -> Int {
+    let moonState = parsePuzzle12Input()
+    return findTimeLoop(startingState: moonState)
 }
