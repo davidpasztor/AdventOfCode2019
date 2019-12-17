@@ -8,8 +8,6 @@
 
 import Foundation
 
-
-
 struct IntcodeProgram {
     let input: Int
     var memory: [Int]
@@ -21,8 +19,8 @@ struct IntcodeProgram {
         self.output = input
     }
 
-    mutating func execute() -> [Int] {
-        // Instruction pointer of the program
+    mutating func execute() {
+        /// Instruction pointer of the program
         var ip = memory.indices.lowerBound
         while ip < memory.indices.upperBound - 1 {
             let instruction = Instruction(rawInput: memory[ip])
@@ -61,21 +59,28 @@ struct IntcodeProgram {
                 }
                 output = memory[address]
                 ip += 2
-                print(output)
             case .finished:
-                return memory
+                return
             }
         }
-        return memory
     }
 }
 
+/// Instruction for an Intcode program
 private struct Instruction {
     let operation: OpCode
+    /// The parameter mode for each parameter of the operation (the number of elements of `parameterMode` equals the number of parameters of the operation)
     let parameterMode: [OpCode.ParameterMode]
+    /// Determines by how much the instruction pointer needs to be offset after `Instruction` was executed, depending on the number of parameters the `operation` takes
     let instructionPointerOffset: Int
 
+    /**
+     Initialise an `Instruction` from a single `Int`, which can have 1-5 digits. The last two digits represents the `OpCode`.
+     The first 3 digits represent the parameter modes for each parameter of the operation. If a parameter mode digit is missing, its default value is 0 and leading 0s are omitted.
+        - parameter rawInput: the 1-5 digit raw representation of the `Instruction`
+     */
     init(rawInput: Int) {
+        let defaultParameterModes = [0,0,0]
         let digits = String(rawInput).map { Int(String($0))! }
         let rawParameterModes: [Int]
         if digits.count == 1 {
@@ -83,7 +88,7 @@ private struct Instruction {
             guard let opCode = OpCode(rawValue: rawOpCode) else {
                 fatalError("Incorrect 1-digit OpCode encountered: \(rawOpCode)")
             }
-            rawParameterModes = [0,0,0]
+            rawParameterModes = defaultParameterModes
             self.operation = opCode
         } else {
             // Need to take last 2 elements, not first 2!
@@ -92,7 +97,8 @@ private struct Instruction {
             guard let opCode = OpCode(rawValue: rawOpCode) else {
                 fatalError("Incorrect 2-digit OpCode encountered: \(rawOpCode)")
             }
-            rawParameterModes = Array((digits.dropLast(2).reversed() + [0,0,0]).prefix(3))
+            // An instruction can have up to 3 parameters and hence parameter modes. The parameter modes are in reverse order, but we store them in the correct order. We also need to make sure omitted parameter modes are initialised with the correct default value
+            rawParameterModes = Array((digits.dropLast(2).reversed() + defaultParameterModes).prefix(3))
             self.operation = opCode
         }
         switch self.operation {
@@ -102,8 +108,8 @@ private struct Instruction {
         case .output:
             let rawParameterMode: Int
             if digits.count == 1 {
-                rawParameterMode = 0
-            } else {
+                rawParameterMode = defaultParameterModes[0]
+            } else { // An output instruction has only 1 input parameter, so it can only have 1 input parameter opcode
                 rawParameterMode = digits[0]
             }
             self.parameterMode = [OpCode.ParameterMode(rawValue: rawParameterMode)!]
