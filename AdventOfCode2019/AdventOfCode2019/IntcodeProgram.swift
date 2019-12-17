@@ -32,19 +32,20 @@ struct IntcodeProgram {
 
     /// Returns the addresses in `memory` for all operands of `instruction` based on the current state of the `instructionPointer`
     private func addressForOperands(of instruction: Instruction, instructionPointer ip: Int) -> [Int] {
-        switch instruction.operation {
-        case .add, .multiply:
+        switch instruction.operation.parameterCount {
+        case 3:
             let lhsOperandAddress = addressForOperand(parameterMode: instruction.parameterMode[0], instructionPointer: ip, parameterIndex: 1)
             let rhsOperandAddress = addressForOperand(parameterMode: instruction.parameterMode[1], instructionPointer: ip, parameterIndex: 2)
             let resultAddress = addressForOperand(parameterMode: instruction.parameterMode[2], instructionPointer: ip, parameterIndex: 3)
             return [lhsOperandAddress, rhsOperandAddress, resultAddress]
-        case .output:
-            let outputAddress = addressForOperand(parameterMode: instruction.parameterMode[0], instructionPointer: ip, parameterIndex: 1)
-            return [outputAddress]
-        case .save:
-            let saveAddress = addressForOperand(parameterMode: instruction.parameterMode[0], instructionPointer: ip, parameterIndex: 1)
-            return [saveAddress]
-        case .finished:
+        case 2:
+            let lhsOperandAddress = addressForOperand(parameterMode: instruction.parameterMode[0], instructionPointer: ip, parameterIndex: 1)
+            let rhsOperandAddress = addressForOperand(parameterMode: instruction.parameterMode[1], instructionPointer: ip, parameterIndex: 2)
+            return [lhsOperandAddress, rhsOperandAddress]
+        case 1:
+            let address = addressForOperand(parameterMode: instruction.parameterMode[0], instructionPointer: ip, parameterIndex: 1)
+            return [address]
+        default:
             return []
         }
     }
@@ -56,12 +57,26 @@ struct IntcodeProgram {
             let instruction = Instruction(rawInput: memory[ip])
             let operandAddresses = addressForOperands(of: instruction, instructionPointer: ip)
             switch instruction.operation {
-            case .add, .multiply:
+            case .add, .equals, .lessThan, .multiply:
                 let lhsOperand = memory[operandAddresses[0]]
                 let rhsOperand = memory[operandAddresses[1]]
                 let resultAddress = operandAddresses[2]
                 if let result = instruction.operation.performOperation(lhs: lhsOperand, rhs: rhsOperand) {
                     memory[resultAddress] = result
+                }
+            case .jumpIfFalse:
+                let firstOperand = memory[operandAddresses[0]]
+                let secondOperand = memory[operandAddresses[1]]
+                if firstOperand == 0 {
+                    // Will be increased by instruction.instructionPointerOffset, so to achieve a jump to `secondOperand`, we need to counteract the later increase
+                    ip = secondOperand - instruction.instructionPointerOffset
+                }
+            case .jumpIfTrue:
+                let firstOperand = memory[operandAddresses[0]]
+                let secondOperand = memory[operandAddresses[1]]
+                if firstOperand != 0 {
+                    // Will be increased by instruction.instructionPointerOffset, so to achieve a jump to `secondOperand`, we need to counteract the later increase
+                    ip = secondOperand - instruction.instructionPointerOffset
                 }
             case .save:
                 let saveAddress = operandAddresses[0]
@@ -91,6 +106,7 @@ private struct Instruction {
         - parameter rawInput: the 1-5 digit raw representation of the `Instruction`
      */
     init(rawInput: Int) {
+        // TODO: use `OpCode.parameterCount` to init `parameterMode`
         let defaultParameterModes = [0,0,0]
         let digits = String(rawInput).map { Int(String($0))! }
         let rawParameterModes: [Int]
@@ -113,9 +129,12 @@ private struct Instruction {
             self.operation = opCode
         }
         switch self.operation {
-        case .add, .multiply:
+        case .add, .equals, .lessThan, .multiply:
             self.parameterMode = rawParameterModes.map { OpCode.ParameterMode(rawValue: $0)! }
             self.instructionPointerOffset = 4
+        case .jumpIfTrue, .jumpIfFalse:
+            self.parameterMode = rawParameterModes.map { OpCode.ParameterMode(rawValue: $0)! }
+            self.instructionPointerOffset = 3
         case .output:
             let rawParameterMode: Int
             if digits.count == 1 {
@@ -146,6 +165,14 @@ private enum OpCode: Int {
     case save = 3
     /// Outputs the value at the address given by its parameter
     case output = 4
+    /// If the first parameter is non-zero, set the instruction pointer to the value from the second parameter. Otherwise does nothing
+    case jumpIfTrue = 5
+    /// If the first parameter is zero, set the instruction pointer to the value from the second parameter. Otherwise does nothing
+    case jumpIfFalse = 6
+    /// If the first parameter is less than the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+    case lessThan = 7
+    /// If the first parameter is equal to the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+    case equals = 8
     /// The program is finished and should immediately halt
     case finished = 99
 
@@ -153,10 +180,28 @@ private enum OpCode: Int {
         switch self {
         case .add:
             return lhs + rhs
+        case .equals:
+            return lhs == rhs ? 1 : 0
+        case .lessThan:
+            return lhs < rhs ? 1 : 0
         case .multiply:
             return lhs * rhs
-        case .finished, .output, .save:
+        case .finished, .output, .save, .jumpIfTrue, .jumpIfFalse:
             return nil
+        }
+    }
+
+    /// Determines how many parameters the operation takes
+    var parameterCount: Int {
+        switch self {
+        case .add, .multiply, .lessThan, .equals:
+            return 3
+        case .jumpIfFalse, .jumpIfTrue:
+            return 2
+        case .save, .output:
+            return 1
+        case .finished:
+            return 0
         }
     }
 }
