@@ -17,7 +17,7 @@ func puzzle5Examples() {
     print("Output for \(memory2) is \(program2.execute())")
 }
 
-func solvePuzzle5Pt1() -> Int? {
+func solvePuzzle5Pt1() -> [Int]? {
     let comma = CharacterSet(charactersIn: ",")
     guard let memory = try? parseInput(day: 5, separator: comma) else { return nil }
     var program = IntcodeProgram(input: 1, memory: memory)

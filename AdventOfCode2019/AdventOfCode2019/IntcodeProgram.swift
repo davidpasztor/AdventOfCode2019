@@ -21,10 +21,10 @@ struct IntcodeProgram {
         self.output = input
     }
 
-    mutating func execute() -> Int {
+    mutating func execute() -> [Int] {
         // Instruction pointer of the program
         var ip = memory.indices.lowerBound
-        while ip < memory.indices.upperBound {
+        while ip < memory.indices.upperBound - 1 {
             let instruction = Instruction(rawInput: memory[ip])
             switch instruction.operation {
             case .add, .multiply:
@@ -34,12 +34,15 @@ struct IntcodeProgram {
                     lhsOperand = memory[ip + 1]
                 case .position:
                     lhsOperand = memory[memory[ip + 1]]
-                case .address:
-                    lhsOperand = ip + 1 //???
                 }
-                let lhsIndex = memory[ip + 1]
-                let rhsIndex = memory[ip + 2]
-                if let result = instruction.operation.performOperation(lhs: memory[lhsIndex], rhs: memory[rhsIndex]) {
+                let rhsOperand: Int
+                switch instruction.parameterMode[1] {
+                case .immediate:
+                    rhsOperand = memory[ip + 2]
+                case .position:
+                    rhsOperand = memory[memory[ip + 2]]
+                }
+                if let result = instruction.operation.performOperation(lhs: lhsOperand, rhs: rhsOperand) {
                     let resultIndex = memory[ip + 3]
                     memory[resultIndex] = result
                 }
@@ -49,14 +52,21 @@ struct IntcodeProgram {
                 memory[address] = input
                 ip += 2
             case .output:
-                let address = memory[ip + 1]
+                let address: Int
+                switch instruction.parameterMode[0] {
+                case .immediate:
+                    address = ip + 1
+                case .position:
+                    address = memory[ip + 1]
+                }
                 output = memory[address]
                 ip += 2
+                print(output)
             case .finished:
-                return output
+                return memory
             }
         }
-        return output
+        return memory
     }
 }
 
@@ -67,24 +77,38 @@ private struct Instruction {
 
     init(rawInput: Int) {
         let digits = String(rawInput).map { Int(String($0))! }
+        let rawParameterModes: [Int]
         if digits.count == 1 {
             let rawOpCode = digits[0]
             guard let opCode = OpCode(rawValue: rawOpCode) else {
                 fatalError("Incorrect 1-digit OpCode encountered: \(rawOpCode)")
             }
+            rawParameterModes = [0,0,0]
             self.operation = opCode
         } else {
-            let rawOpCode = 10 * digits[1] + digits[0]
+            // Need to take last 2 elements, not first 2!
+            let opCodeDigits = Array(digits.reversed().prefix(2))
+            let rawOpCode = 10 * opCodeDigits[1] + opCodeDigits[0]
             guard let opCode = OpCode(rawValue: rawOpCode) else {
                 fatalError("Incorrect 2-digit OpCode encountered: \(rawOpCode)")
             }
+            rawParameterModes = Array((digits.dropLast(2).reversed() + [0,0,0]).prefix(3))
             self.operation = opCode
         }
         switch self.operation {
         case .add, .multiply:
-            self.parameterMode = digits.reversed().prefix(3).map { OpCode.ParameterMode(rawValue: $0)! }
+            self.parameterMode = rawParameterModes.map { OpCode.ParameterMode(rawValue: $0)! }
             self.instructionPointerOffset = 4
-        case .output, .save:
+        case .output:
+            let rawParameterMode: Int
+            if digits.count == 1 {
+                rawParameterMode = 0
+            } else {
+                rawParameterMode = digits[0]
+            }
+            self.parameterMode = [OpCode.ParameterMode(rawValue: rawParameterMode)!]
+            self.instructionPointerOffset = 2
+        case .save:
             self.parameterMode = [.position]
             self.instructionPointerOffset = 2
         case .finished:
@@ -128,8 +152,5 @@ extension OpCode {
         /// Interpret the parameter as a value
         /// - if the parameter is 50, its value is simply 50
         case immediate = 1
-        /// Intepret the parameter as the value stored at the specified address in memory
-        /// - If the parameter is 50, its value is the value stored at address 50 in memory
-        case address = 50
     }
 }

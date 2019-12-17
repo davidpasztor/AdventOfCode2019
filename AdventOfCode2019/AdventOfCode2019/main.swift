@@ -35,9 +35,11 @@ puzzle4Pt2Examples()
 let puzzle4Pt2Expected = 617
 print("Expected: \(puzzle4Pt2Expected)")
 print("Actual: \(solvePuzzle4Pt2())")
+ */
 puzzleDay(n: 5)
 puzzle5Examples()
-*/
+let puzzle5Pt1Result = solvePuzzle5Pt1()
+print("Pt1 result is \(puzzle5Pt1Result ?? [])")
 puzzleDay(n: 10)
 //puzzle10Examples()
 puzzleDay(n: 12)
@@ -46,3 +48,5 @@ let puzzle12Pt1Result = solvePuzzle12Pt1()
 print("Total energy in the system after 1000 steps: \(puzzle12Pt1Result)")
 print("Equals expected answer, 6490:", puzzle12Pt1Result == 6490)
 //puzzle12Pt2Examples()
+puzzleDay(n: 14)
+//solvePuzzle14Pt1Examples()
