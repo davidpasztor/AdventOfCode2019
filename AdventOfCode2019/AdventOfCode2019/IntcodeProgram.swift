@@ -19,49 +19,60 @@ struct IntcodeProgram {
         self.output = input
     }
 
+    /// Returns the address in `memory` for an operand of an `Instruction`, based on teh current `instructionPointer` and the index of the parameter
+    private func addressForOperand(parameterMode: OpCode.ParameterMode, instructionPointer: Int, parameterIndex: Int) -> Int {
+        let index = instructionPointer + parameterIndex
+        switch parameterMode {
+        case .immediate:
+            return index
+        case .position:
+            return memory[index]
+        }
+    }
+
+    /// Returns the addresses in `memory` for all operands of `instruction` based on the current state of the `instructionPointer`
+    private func addressForOperands(of instruction: Instruction, instructionPointer ip: Int) -> [Int] {
+        switch instruction.operation {
+        case .add, .multiply:
+            let lhsOperandAddress = addressForOperand(parameterMode: instruction.parameterMode[0], instructionPointer: ip, parameterIndex: 1)
+            let rhsOperandAddress = addressForOperand(parameterMode: instruction.parameterMode[1], instructionPointer: ip, parameterIndex: 2)
+            let resultAddress = addressForOperand(parameterMode: instruction.parameterMode[2], instructionPointer: ip, parameterIndex: 3)
+            return [lhsOperandAddress, rhsOperandAddress, resultAddress]
+        case .output:
+            let outputAddress = addressForOperand(parameterMode: instruction.parameterMode[0], instructionPointer: ip, parameterIndex: 1)
+            return [outputAddress]
+        case .save:
+            let saveAddress = addressForOperand(parameterMode: instruction.parameterMode[0], instructionPointer: ip, parameterIndex: 1)
+            return [saveAddress]
+        case .finished:
+            return []
+        }
+    }
+
     mutating func execute() {
         /// Instruction pointer of the program
         var ip = memory.indices.lowerBound
         while ip < memory.indices.upperBound - 1 {
             let instruction = Instruction(rawInput: memory[ip])
+            let operandAddresses = addressForOperands(of: instruction, instructionPointer: ip)
             switch instruction.operation {
             case .add, .multiply:
-                let lhsOperand: Int
-                switch instruction.parameterMode[0] {
-                case .immediate:
-                    lhsOperand = memory[ip + 1]
-                case .position:
-                    lhsOperand = memory[memory[ip + 1]]
-                }
-                let rhsOperand: Int
-                switch instruction.parameterMode[1] {
-                case .immediate:
-                    rhsOperand = memory[ip + 2]
-                case .position:
-                    rhsOperand = memory[memory[ip + 2]]
-                }
+                let lhsOperand = memory[operandAddresses[0]]
+                let rhsOperand = memory[operandAddresses[1]]
+                let resultAddress = operandAddresses[2]
                 if let result = instruction.operation.performOperation(lhs: lhsOperand, rhs: rhsOperand) {
-                    let resultIndex = memory[ip + 3]
-                    memory[resultIndex] = result
+                    memory[resultAddress] = result
                 }
-                ip += 4
             case .save:
-                let address = memory[ip + 1]
-                memory[address] = input
-                ip += 2
+                let saveAddress = operandAddresses[0]
+                memory[saveAddress] = input
             case .output:
-                let address: Int
-                switch instruction.parameterMode[0] {
-                case .immediate:
-                    address = ip + 1
-                case .position:
-                    address = memory[ip + 1]
-                }
-                output = memory[address]
-                ip += 2
+                let outputAddress = operandAddresses[0]
+                output = memory[outputAddress]
             case .finished:
                 return
             }
+            ip += instruction.instructionPointerOffset
         }
     }
 }
